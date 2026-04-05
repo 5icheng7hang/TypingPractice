@@ -79,7 +79,7 @@
 	}
 
 	.pinyin {
-		font-size: 1.56rem;
+		font-size: 3.12rem;
 		letter-spacing: 0.02em;
 		line-height: 1;
 		min-height: 1em;
@@ -95,13 +95,13 @@
 		font-weight: 700;
 	}
 	.letter.pending {
-		color: var(--text-muted);
-		opacity: 0.3;
+		color: var(--pending);
+		font-weight: 700;
 	}
 
 	.char {
 		font-family: var(--font-zh);
-		font-size: 4rem;
+		font-size: 8rem;
 		line-height: 1;
 		color: var(--text);
 		transition: color var(--transition);
