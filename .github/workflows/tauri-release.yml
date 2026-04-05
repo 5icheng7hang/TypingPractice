@@ -1,0 +1,130 @@
+name: Tauri Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  guard:
+    name: Verify tag comes from tauri branch
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      tag_name: ${{ steps.vars.outputs.tag_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Capture tag name
+        id: vars
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "tag_name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_name=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check whether tagged commit is on feat/tauri
+        id: check
+        shell: bash
+        run: |
+          SHOULD_RELEASE=false
+          TARGET_BRANCH="origin/feat/tauri"
+
+          git fetch origin feat/tauri:refs/remotes/origin/feat/tauri --prune
+
+          if ! git rev-parse --verify "$TARGET_BRANCH" >/dev/null 2>&1; then
+            echo "Target branch $TARGET_BRANCH was not found."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            TAG_COMMIT="$(git rev-list -n 1 "$TAG_NAME")"
+
+            if git merge-base --is-ancestor "$TAG_COMMIT" "$TARGET_BRANCH"; then
+              SHOULD_RELEASE=true
+            fi
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            CURRENT_SHA="${GITHUB_SHA}"
+
+            if git merge-base --is-ancestor "$CURRENT_SHA" "$TARGET_BRANCH"; then
+              SHOULD_RELEASE=true
+            fi
+          fi
+
+          echo "should_release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Skip summary
+        if: steps.check.outputs.should_release != 'true'
+        run: |
+          echo "This workflow only publishes native releases for commits that are part of the feat/tauri branch." >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: Build and publish (${{ matrix.platform }})
+    needs: guard
+    if: needs.guard.outputs.should_release == 'true'
+    concurrency:
+      group: tauri-release-${{ github.ref }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: --bundles dmg
+          - platform: windows-latest
+            args: --bundles nsis,msi
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and upload Tauri release assets
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ needs.guard.outputs.tag_name || github.ref_name }}
+          releaseName: ${{ needs.guard.outputs.tag_name || github.ref_name }}
+          releaseBody: |
+            Automated native desktop release for ${{ needs.guard.outputs.tag_name || github.ref_name }}.
+
+            This workflow only runs for release tags that point to commits included in the `feat/tauri` branch.
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  skipped:
+    name: Release skipped
+    needs: guard
+    if: needs.guard.outputs.should_release != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain skip
+        run: |
+          echo "Skipped: the tag or manual run target is not part of the feat/tauri branch." >> "$GITHUB_STEP_SUMMARY"
