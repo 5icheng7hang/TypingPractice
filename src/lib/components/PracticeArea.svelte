@@ -3,6 +3,7 @@
 	import { stripTones } from '$lib/pinyin.js';
 	import StatsBar from './StatsBar.svelte';
 	import CharacterTile from './CharacterTile.svelte';
+	import HandKeys from './HandKeys.svelte';
 
 	const SESSION_SIZE = 30;
 
@@ -20,12 +21,9 @@
 		Array(words[0]?.word.length ?? 0).fill(null)
 	);
 
-	// 'typing'    — actively typing current char
-	// 'word-done' — word complete, waiting for Space to advance
 	type Phase = 'typing' | 'word-done';
 	let phase = $state<Phase>('typing');
 
-	// Words animating out above
 	type LeavingWord = {
 		id: number;
 		word: Word;
@@ -34,7 +32,6 @@
 	};
 	let leavingWords = $state<LeavingWord[]>([]);
 
-	// Stats
 	let correctChars = $state(0);
 	let totalChars = $state(0);
 	let wordsCompleted = $state(0);
@@ -45,6 +42,13 @@
 	const wpm = $derived(elapsed > 0 ? Math.round((wordsCompleted * 60) / elapsed) : 0);
 	const accuracy = $derived(totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100);
 	const currentWord = $derived(wordIdx < words.length ? words[wordIdx] : null);
+
+	// Next letter the user must press
+	const nextKey = $derived(
+		currentWord && phase === 'typing'
+			? (stripTones(currentWord.pinyins[charIdx])[currentTyped.length] ?? null)
+			: null
+	);
 
 	let inputEl = $state<HTMLInputElement | null>(null);
 	$effect(() => { inputEl?.focus(); });
@@ -98,14 +102,12 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (wordIdx >= words.length) return;
 
-		// Space advances after a word is done
 		if (phase === 'word-done' && e.key === ' ') {
 			e.preventDefault();
 			advanceWord();
 			return;
 		}
 
-		// Block all input while waiting
 		if (phase !== 'typing') {
 			e.preventDefault();
 			return;
@@ -135,7 +137,6 @@
 			if (isLastChar) {
 				phase = 'word-done';
 			} else {
-				// Auto-advance to next char
 				charIdx++;
 				currentTyped = '';
 				phase = 'typing';
@@ -150,35 +151,40 @@
 
 	<div class="stage">
 		<div class="word-viewport">
-			{#each leavingWords as lw (lw.id)}
-				<div class="word-row lw-row" class:leaving={lw.leaving}>
-					{#each lw.word.word.split('') as char, ci}
-						<CharacterTile
-							char={char}
-							displayPinyin={lw.word.pinyins[ci]}
-							target={stripTones(lw.word.pinyins[ci])}
-							typed=""
-							state={lw.results[ci]}
-						/>
-					{/each}
-				</div>
-			{/each}
-
-			{#if currentWord}
-				{#key wordIdx}
-					<div class="word-row active-row">
-						{#each currentWord.word.split('') as char, ci}
+				{#each leavingWords as lw (lw.id)}
+					<div class="word-row lw-row" class:leaving={lw.leaving}>
+						{#each lw.word.word.split('') as char, ci}
 							<CharacterTile
 								char={char}
-								displayPinyin={currentWord.pinyins[ci]}
-								target={stripTones(currentWord.pinyins[ci])}
-								typed={ci === charIdx ? currentTyped : ''}
-								state={charStates[ci] ?? (ci === charIdx ? 'active' : 'untyped')}
+								displayPinyin={lw.word.pinyins[ci]}
+								target={stripTones(lw.word.pinyins[ci])}
+								typed=""
+								state={lw.results[ci]}
 							/>
 						{/each}
 					</div>
-				{/key}
-			{/if}
+				{/each}
+
+				{#if currentWord}
+					{#key wordIdx}
+						<div class="word-row active-row">
+							{#each currentWord.word.split('') as char, ci}
+								<CharacterTile
+									char={char}
+									displayPinyin={currentWord.pinyins[ci]}
+									target={stripTones(currentWord.pinyins[ci])}
+									typed={ci === charIdx ? currentTyped : ''}
+									state={charStates[ci] ?? (ci === charIdx ? 'active' : 'untyped')}
+								/>
+							{/each}
+						</div>
+					{/key}
+				{/if}
+		</div>
+
+		<div class="keyboards-row">
+			<HandKeys side="left" highlight={nextKey} />
+			<HandKeys side="right" highlight={nextKey} />
 		</div>
 
 		<div class="prompt" class:visible={phase !== 'typing'}>
@@ -224,12 +230,19 @@
 		position: relative;
 		height: 320px;
 		width: 100%;
-		max-width: 800px;
+		max-width: 900px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-
 		overflow: hidden;
+	}
+
+	.keyboards-row {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 6rem;
+		width: 100%;
 	}
 
 	.word-row {
