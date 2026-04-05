@@ -88,6 +88,56 @@ npm run build
 npm run preview   # preview the production build locally
 ```
 
+### Native Desktop Build
+
+This repo currently uses two working branches:
+
+- `main` — web version, used for Vercel deployment
+- `feat/tauri` — native desktop version, used for Tauri builds and GitHub Releases
+
+If you are working on the desktop app, switch to `feat/tauri`.
+
+To build the native app locally:
+
+```sh
+npm run tauri build
+```
+
+To build only specific bundles:
+
+```sh
+npm run tauri build -- --bundles dmg
+npm run tauri build -- --bundles nsis,msi
+```
+
+### Native Release Reminders
+
+The GitHub Actions native release workflow is intended to be used from `feat/tauri`.
+
+Please follow these reminders:
+
+1. Do native release work on `feat/tauri`
+2. Only create release tags from `feat/tauri`
+3. Keep using `main` for the web/Vercel deployment flow
+4. If you develop a feature on one branch, port it to the other branch before releasing from that side
+
+Native release flow:
+
+```sh
+git checkout feat/tauri
+git pull
+git tag v0.1.5
+git push origin feat/tauri
+git push origin v0.1.5
+```
+
+Pushing a new `v*` tag from `feat/tauri` will automatically build and publish:
+
+- Windows installers
+- macOS `.dmg`
+
+GitHub Release assets are created by the native release workflow in this branch.
+
 ---
 
 ## How to Play
