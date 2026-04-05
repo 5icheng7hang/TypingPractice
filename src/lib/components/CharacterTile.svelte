@@ -88,12 +88,15 @@
 
 	.letter.correct {
 		color: var(--accent);
+		font-weight: 700;
 	}
 	.letter.wrong {
 		color: var(--error);
+		font-weight: 700;
 	}
 	.letter.pending {
 		color: var(--text-muted);
+		opacity: 0.3;
 	}
 
 	.char {
