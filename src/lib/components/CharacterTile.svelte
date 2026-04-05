@@ -32,8 +32,6 @@
 			if (state === 'done-wrong') return { letter, status: 'wrong' as LetterStatus };
 			if (state === 'untyped') return { letter, status: 'pending' as LetterStatus };
 			// active — compare typed vs target per position
-			// displayPinyin may have accented chars; target is stripped.
-			// We align by index since lengths match (1 display char = 1 stripped char in pinyin).
 			if (i < typed.length) {
 				const status: LetterStatus = typed[i] === target[i] ? 'correct' : 'wrong';
 				return { letter, status };

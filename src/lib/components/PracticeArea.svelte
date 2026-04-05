@@ -228,8 +228,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 100%);
-		mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 100%);
+
 		overflow: hidden;
 	}
 
@@ -300,4 +299,3 @@
 		letter-spacing: 0.05em;
 	}
 </style>
-
