@@ -1,42 +1,120 @@
-# sv
+# 汉字练习 — Pinyin Typing Trainer
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A clean, minimal Chinese character typing practice app built with SvelteKit and TypeScript. Type the pinyin for each displayed Chinese character (no tone marks required) and track your speed and accuracy in real time.
 
-## Creating a project
+![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=flat&logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 
-If you're seeing this, you've probably already done this step. Congrats!
+---
 
-```sh
-# create a new project
-npx sv create my-app
+## Features
+
+- **Character-by-character pinyin input** — type the toneless pinyin for each character in a word one at a time
+- **Mixed word lengths** — sessions draw from 2-, 3-, and 4-character word lists for varied practice
+- **30 words per session** — enough to get a meaningful WPM and accuracy reading without fatigue
+- **Live stats bar** — words completed, WPM, accuracy %, and elapsed time update as you type
+- **Animated transitions** — completed words fly upward off-screen; the next word slides in smoothly
+- **Results screen** — WPM, accuracy, time, correct/wrong counts, and a grade (完美 → 继续加油)
+- **Light / Dark theme** — toggle in the header; preference applied via a `data-theme` attribute on `<html>`
+- **No tone marks needed** — just type the base pinyin syllable (e.g. `ni` for 你, `hao` for 好)
+
+---
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | [SvelteKit](https://kit.svelte.dev/) with Svelte 5 runes |
+| Language | TypeScript |
+| Styling | Scoped component CSS + CSS custom properties (no external UI library) |
+| Word data | Static TypeScript modules (`words-2.ts`, `words-3.ts`, `words-4.ts`) |
+| Pinyin util | Custom `pinyin.ts` — strips tone diacritics for toneless comparison |
+
+---
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/
+│   │   ├── CharacterTile.svelte   # Single character + pinyin display tile
+│   │   ├── HomeScreen.svelte      # Start screen with session info
+│   │   ├── PracticeArea.svelte    # Core typing engine and word stage
+│   │   ├── ResultsScreen.svelte   # End-of-session stats card
+│   │   ├── StatsBar.svelte        # Live progress / WPM / accuracy bar
+│   │   └── ThemeToggle.svelte     # Light / dark mode button
+│   ├── pinyin.ts                  # Tone-stripping utility
+│   ├── styles.css                 # Global CSS variables and base styles
+│   ├── words.ts                   # Session builder (getSession)
+│   ├── words-2.ts                 # 2-character word list
+│   ├── words-3.ts                 # 3-character word list
+│   └── words-4.ts                 # 4-character word list
+└── routes/
+    ├── +layout.svelte             # Global layout (imports styles.css)
+    ├── +page.svelte               # App shell — screen routing (home → practice → results)
+    └── +page.ts                   # Page load config
 ```
 
-To recreate this project with the same configuration:
+---
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 18 or later
+- npm (comes with Node)
+
+### Install & Run
 
 ```sh
-# recreate this project
-npx sv@0.14.0 create --template minimal --types ts --install npm .
-```
+# clone the repo
+git clone https://github.com/5icheng7hang/TypingPractice.git
+cd TypingPractice
 
-## Developing
+# install dependencies
+npm install
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+# start the dev server
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Then open [http://localhost:5173](http://localhost:5173) in your browser.
 
-To create a production version of your app:
+### Build for Production
 
 ```sh
 npm run build
+npm run preview   # preview the production build locally
 ```
 
-You can preview the production build with `npm run preview`.
+---
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## How to Play
+
+1. Click **开始练习** on the home screen.
+2. A Chinese word appears in the centre of the screen. Each character shows its pinyin above it.
+3. Type the toneless pinyin for the **current character** (highlighted). For example:
+   - 你好 → type `ni`, press any key to move on, then type `hao`
+4. After the last character of a word, press **Space** to advance to the next word.
+5. Complete all 30 words to see your results.
+
+> Tip: tones are never required — `zhongguo` works just as well as `zhōngguó`.
+
+---
+
+## Grading
+
+| Accuracy | Grade |
+|---|---|
+| ≥ 98 % | 完美 |
+| ≥ 90 % | 优秀 |
+| ≥ 75 % | 良好 |
+| ≥ 60 % | 及格 |
+| < 60 % | 继续加油 |
+
+---
+
+## License
+
+MIT
