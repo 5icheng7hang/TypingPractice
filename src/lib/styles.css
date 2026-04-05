@@ -1,0 +1,67 @@
+:root {
+	/* Mariana Light — derived from Mariana palette */
+	--bg: #f5f6f7;
+	--surface: #ffffff;
+	--border: #d8dee9;
+	--text: #303841;
+	--text-muted: #808fa2;
+	--accent: #6699cc;
+	--accent-light: rgba(102, 153, 204, 0.12);
+	--error: #ec5f67;
+	--error-light: rgba(236, 95, 103, 0.10);
+	--success: #5a9e6f;
+
+	/* Typography */
+	--font-ui: 'Inter', system-ui, sans-serif;
+	--font-zh: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+	/* Spacing */
+	--radius: 12px;
+	--radius-sm: 6px;
+
+	/* Transitions */
+	--transition: 150ms ease;
+}
+
+[data-theme='dark'] {
+	/* Sublime Text Mariana — exact palette */
+	--bg: #303841;
+	--surface: #39424d;
+	--border: #4a5568;
+	--text: #d8dee9;
+	--text-muted: #8899aa;
+	--accent: #6699cc;
+	--accent-light: rgba(102, 153, 204, 0.20);
+	--error: #ec5f67;
+	--error-light: rgba(236, 95, 103, 0.20);
+	--success: #99c794;
+}
+
+*, *::before, *::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html, body {
+	height: 100%;
+}
+
+html {
+	background: var(--bg);
+	transition: background var(--transition);
+}
+
+body {
+	font-family: var(--font-ui);
+	background: var(--bg);
+	color: var(--text);
+	transition: background var(--transition), color var(--transition);
+	-webkit-font-smoothing: antialiased;
+}
+
+#app {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
