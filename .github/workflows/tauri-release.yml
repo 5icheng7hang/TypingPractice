@@ -51,14 +51,16 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
             TAG_COMMIT="$(git rev-list -n 1 "$TAG_NAME")"
+            BRANCH_HEAD="$(git rev-parse "$TARGET_BRANCH")"
 
-            if git merge-base --is-ancestor "$TAG_COMMIT" "$TARGET_BRANCH"; then
+            if [[ "$TAG_COMMIT" == "$BRANCH_HEAD" ]] || git branch -r --contains "$TAG_COMMIT" | grep -q "origin/feat/tauri"; then
               SHOULD_RELEASE=true
             fi
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             CURRENT_SHA="${GITHUB_SHA}"
+            BRANCH_HEAD="$(git rev-parse "$TARGET_BRANCH")"
 
-            if git merge-base --is-ancestor "$CURRENT_SHA" "$TARGET_BRANCH"; then
+            if [[ "$CURRENT_SHA" == "$BRANCH_HEAD" ]] || git branch -r --contains "$CURRENT_SHA" | grep -q "origin/feat/tauri"; then
               SHOULD_RELEASE=true
             fi
           fi
