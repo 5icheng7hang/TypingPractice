@@ -40,7 +40,7 @@ jobs:
           SHOULD_RELEASE=false
           TARGET_BRANCH="origin/feat/tauri"
 
-          git fetch origin feat/tauri:refs/remotes/origin/feat/tauri --prune
+          git fetch origin refs/heads/feat/tauri:refs/remotes/origin/feat/tauri --prune
 
           if ! git rev-parse --verify "$TARGET_BRANCH" >/dev/null 2>&1; then
             echo "Target branch $TARGET_BRANCH was not found."
