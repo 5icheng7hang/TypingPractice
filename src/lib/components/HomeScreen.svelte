@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { onstart } = $props<{ onstart: () => void }>();
+	let { onstart, onebook } = $props<{ onstart: () => void; onebook: () => void }>();
 </script>
 
 <div class="home">
@@ -25,11 +25,16 @@
 		</div>
 	</div>
 
-	<button class="start-btn" onclick={onstart}>
-		开始练习
-	</button>
+	<div class="buttons">
+		<button class="start-btn" onclick={onstart}>
+			词汇练习
+		</button>
+		<button class="ebook-btn" onclick={onebook}>
+			📖 电子书模式
+		</button>
+	</div>
 
-	<p class="hint">按下按钮开始，输入拼音练习打字</p>
+	<p class="hint">选择模式开始练习</p>
 </div>
 
 <style>
@@ -99,6 +104,13 @@
 		background: var(--border);
 	}
 
+	.buttons {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
 	.start-btn {
 		font-family: var(--font-zh);
 		font-size: 1.1rem;
@@ -119,6 +131,31 @@
 	}
 
 	.start-btn:active {
+		transform: translateY(0);
+	}
+
+	.ebook-btn {
+		font-family: var(--font-zh);
+		font-size: 1rem;
+		font-weight: 500;
+		color: var(--accent);
+		background: var(--accent-light);
+		border: 1px solid var(--accent);
+		border-radius: var(--radius);
+		padding: 0.75rem 2.5rem;
+		cursor: pointer;
+		letter-spacing: 0.1em;
+		transition: opacity var(--transition), transform var(--transition), background var(--transition);
+	}
+
+	.ebook-btn:hover {
+		opacity: 0.85;
+		transform: translateY(-1px);
+		background: var(--accent);
+		color: var(--bg);
+	}
+
+	.ebook-btn:active {
 		transform: translateY(0);
 	}
 
